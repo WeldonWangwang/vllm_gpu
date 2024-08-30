@@ -22,7 +22,6 @@ from vllm.sequence import (ExecuteModelRequest, SamplerOutput,
                            SequenceGroupMetadata)
 from vllm.worker.openvino_model_runner import OpenVINOModelRunner
 from vllm.worker.worker_base import LoraNotSupportedWorkerBase
-import traceback
 
 logger = init_logger(__name__)
 
@@ -98,9 +97,9 @@ class OpenVINOCacheEngine:
         ov_device: str,
     ) -> List[Tuple[ov.Tensor, ov.Tensor]]:
         """Allocates KV cache."""
-        print("_allocate_kv_cache")
+        ov_tp_size = 1 if envs.VLLM_OPENVINO_TP_SIZE == None else envs.VLLM_OPENVINO_TP_SIZE
         k_block_shape = v_block_shape = self.attn_backend.get_kv_cache_shape(
-            num_blocks, self.block_size, int(self.num_kv_heads/2), self.head_size)[1:]
+            num_blocks, self.block_size, int(self.num_kv_heads/ov_tp_size), self.head_size)[1:]
         kv_cache: List[Tuple[ov.Tensor, ov.Tensor]] = []
 
         if "CPU" in ov_device:
@@ -143,7 +142,6 @@ class OpenVINOCacheEngine:
         swap_cache: List[Tuple[ov.Tensor, ov.Tensor]] = []
 
         if num_blocks == 0:
-            print("return swap!!!")
             return swap_cache
 
         assert "CPU" not in ov_device, \
@@ -231,7 +229,6 @@ class OpenVINOWorker(LoraNotSupportedWorkerBase):
         kv_cache_dtype: Optional[ov.Type] = ov.Type.undefined,
         is_driver_worker: bool = False,
     ) -> None:
-        # traceback.print_stack()
         self.ov_core = ov_core
         self.model_config = model_config
         self.parallel_config = parallel_config
@@ -321,8 +318,6 @@ class OpenVINOWorker(LoraNotSupportedWorkerBase):
 
             num_gpu_blocks = max(num_gpu_blocks, 0)
             num_cpu_blocks = max(num_cpu_blocks, 0)
-        print("*****************num_gpu_blocks: ", num_gpu_blocks)
-        print("*****************num_cpu_blocks: ", num_cpu_blocks)
 
         return num_gpu_blocks, num_cpu_blocks
 
