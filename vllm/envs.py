@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     VLLM_CPU_OMP_THREADS_BIND: str = ""
     VLLM_OPENVINO_DEVICE: str = "CPU"
     VLLM_OPENVINO_TP_CANDIDATE_DEVICE: Optional[str] = None
-    VLLM_OPENVINO_TP_SIZE: Optional[int] = None
+    VLLM_OPENVINO_TP_SIZE: Optional[int] = 1
     VLLM_OPENVINO_KVCACHE_SPACE: int = 0
     VLLM_OPENVINO_CPU_KV_CACHE_PRECISION: Optional[str] = None
     VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS: bool = False
@@ -289,7 +289,7 @@ environment_variables: Dict[str, Callable[[], Any]] = {
     lambda: os.getenv("VLLM_OPENVINO_TP_CANDIDATE_DEVICE", None),
     
     "VLLM_OPENVINO_TP_SIZE":
-    lambda: int(os.getenv("VLLM_OPENVINO_TP_SIZE", None)),
+    lambda: int(os.getenv("VLLM_OPENVINO_TP_SIZE", "1")),
 
     # OpenVINO key-value cache space
     # default is 4GB
