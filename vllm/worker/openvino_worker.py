@@ -16,10 +16,10 @@ from vllm.distributed import (broadcast_tensor_dict,
 from vllm.inputs import INPUT_REGISTRY
 from vllm.logger import init_logger
 from vllm.model_executor import set_random_seed
-from vllm.model_executor.layers.sampler import SamplerOutput
 from vllm.multimodal import MULTIMODAL_REGISTRY
 from vllm.sampling_params import SamplingParams
-from vllm.sequence import ExecuteModelRequest, SequenceGroupMetadata
+from vllm.sequence import (ExecuteModelRequest, SamplerOutput,
+                           SequenceGroupMetadata)
 from vllm.worker.openvino_model_runner import OpenVINOModelRunner
 from vllm.worker.worker_base import LoraNotSupportedWorkerBase
 
@@ -77,7 +77,8 @@ class OpenVINOCacheEngine:
             self.cache_config.cache_dtype,
             self.block_size,
         )
-
+        print("num_device_blocks: ", self.num_device_blocks)
+        print("num_swap_blocks: ", self.num_swap_blocks)
         # Initialize the cache.
         self.kv_cache: List[Tuple[ov.Tensor,
                                   ov.Tensor]] = self._allocate_kv_cache(
@@ -96,8 +97,10 @@ class OpenVINOCacheEngine:
         ov_device: str,
     ) -> List[Tuple[ov.Tensor, ov.Tensor]]:
         """Allocates KV cache."""
+        # ov_tp_size = 1 if envs.VLLM_OPENVINO_TP_SIZE == 1 else envs.VLLM_OPENVINO_TP_SIZE
+        ov_tp_size = envs.VLLM_OPENVINO_TP_SIZE
         k_block_shape = v_block_shape = self.attn_backend.get_kv_cache_shape(
-            num_blocks, self.block_size, self.num_kv_heads, self.head_size)[1:]
+            num_blocks, self.block_size, int(self.num_kv_heads/ov_tp_size), self.head_size)[1:]
         kv_cache: List[Tuple[ov.Tensor, ov.Tensor]] = []
 
         if "CPU" in ov_device:
