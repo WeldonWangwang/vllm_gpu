@@ -16,10 +16,10 @@ from vllm.distributed import (broadcast_tensor_dict,
 from vllm.inputs import INPUT_REGISTRY
 from vllm.logger import init_logger
 from vllm.model_executor import set_random_seed
+from vllm.model_executor.layers.sampler import SamplerOutput
 from vllm.multimodal import MULTIMODAL_REGISTRY
 from vllm.sampling_params import SamplingParams
-from vllm.sequence import (ExecuteModelRequest, SamplerOutput,
-                           SequenceGroupMetadata)
+from vllm.sequence import ExecuteModelRequest, SequenceGroupMetadata
 from vllm.worker.openvino_model_runner import OpenVINOModelRunner
 from vllm.worker.worker_base import LoraNotSupportedWorkerBase
 
@@ -139,7 +139,7 @@ class OpenVINOCacheEngine:
     ) -> List[Tuple[ov.Tensor, ov.Tensor]]:
         """Allocates swap cache."""
         k_block_shape = v_block_shape = self.attn_backend.get_kv_cache_shape(
-            num_blocks, self.block_size, int(self.num_kv_heads), self.head_size)[1:]
+            num_blocks, self.block_size, self.num_kv_heads, self.head_size)[1:]
         swap_cache: List[Tuple[ov.Tensor, ov.Tensor]] = []
 
         if num_blocks == 0:
