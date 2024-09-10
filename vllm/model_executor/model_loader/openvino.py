@@ -137,7 +137,8 @@ class OpenVINOCasualLM(nn.Module):
         _modify_cache_parameters(pt_model.model, kv_cache_dtype, "CPU"
                                  in ov_device)
 
-        ov_compiled = ov_core.compile_model(pt_model.model, ov_device)
+        extra_property = envs.VLLM_OPENVINO_TP_CANDIDATE_DEVICE
+        ov_compiled = ov_core.compile_model(pt_model.model, ov_device, {"MULTI_DEVICE_PRIORITIES": extra_property})
         self.ov_request = ov_compiled.create_infer_request()
 
     def forward(
