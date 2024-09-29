@@ -614,9 +614,10 @@ class LLMEngine:
         if self.tokenizer is None:
             logger.warning("Using None for EOS token id because tokenizer "
                            "is not initialized")
+        if envs.VLLM_OPENVINO_DISABLE_EOS:
             return None
-
-        return self.tokenizer.get_lora_tokenizer(lora_request).eos_token_id
+        else:
+            return self.tokenizer.get_lora_tokenizer(lora_request).eos_token_id
 
     def _get_decoder_start_token_id(self) -> Optional[int]:
         '''
@@ -659,7 +660,7 @@ class LLMEngine:
         block_size = self.cache_config.block_size
         seq_id = next(self.seq_counter)
         eos_token_id = self._get_eos_token_id(lora_request)
-
+        print("^^^^^^^ ", eos_token_id)
         seq = Sequence(seq_id, processed_inputs, block_size, eos_token_id,
                        lora_request, prompt_adapter_request)
 

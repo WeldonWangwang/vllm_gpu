@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     VLLM_OPENVINO_KVCACHE_SPACE: int = 0
     VLLM_OPENVINO_CPU_KV_CACHE_PRECISION: Optional[str] = None
     VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS: bool = False
+    VLLM_OPENVINO_DISABLE_EOS: bool = False
     VLLM_XLA_CACHE_PATH: str = os.path.join(VLLM_CACHE_ROOT, "xla_cache")
     VLLM_FUSED_MOE_CHUNK_SIZE: int = 64 * 1024
     VLLM_USE_RAY_SPMD_WORKER: bool = False
@@ -316,6 +317,9 @@ environment_variables: Dict[str, Callable[[], Any]] = {
     # default is False
     "VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS":
     lambda: bool(os.getenv("VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS", False)),
+
+    "VLLM_OPENVINO_DISABLE_EOS":
+    lambda: bool(os.getenv("VLLM_OPENVINO_DISABLE_EOS", False)),
 
     # If the env var is set, then all workers will execute as separate
     # processes from the engine, and we use the same mechanism to trigger

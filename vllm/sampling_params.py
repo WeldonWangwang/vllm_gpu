@@ -9,6 +9,7 @@ import torch
 from typing_extensions import Annotated
 
 from vllm.logger import init_logger
+import vllm.envs as envs
 
 logger = init_logger(__name__)
 
@@ -354,26 +355,26 @@ class SamplingParams(
             generation_config: Dict[str, Any],
             model_eos_token_id: Optional[int] = None) -> None:
         """Update if there are non-default values from generation_config"""
-
         if model_eos_token_id is not None:
             # Add the eos token id into the sampling_params to support
             # min_tokens processing.
             self._all_stop_token_ids.add(model_eos_token_id)
-
-        # Update eos_token_id for generation
-        if (eos_ids := generation_config.get("eos_token_id")) is not None:
-            # it can be either int or list of int
-            eos_ids = {eos_ids} if isinstance(eos_ids, int) else set(eos_ids)
-            if model_eos_token_id is not None:
-                # We don't need to include the primary eos_token_id in
-                # stop_token_ids since it's handled separately for stopping
-                # purposes.
-                eos_ids.discard(model_eos_token_id)
-            if eos_ids:
-                self._all_stop_token_ids.update(eos_ids)
-                if not self.ignore_eos:
-                    eos_ids.update(self.stop_token_ids)
-                    self.stop_token_ids = list(eos_ids)
+        if envs.VLLM_OPENVINO_DISABLE_EOS == False:
+            # Update eos_token_id for generation
+            if (eos_ids := generation_config.get("eos_token_id")) is not None:
+                print("eos_ids: ", eos_ids)
+                # it can be either int or list of int
+                eos_ids = {eos_ids} if isinstance(eos_ids, int) else set(eos_ids)
+                if model_eos_token_id is not None:
+                    # We don't need to include the primary eos_token_id in
+                    # stop_token_ids since it's handled separately for stopping
+                    # purposes.
+                    eos_ids.discard(model_eos_token_id)
+                if eos_ids:
+                    self._all_stop_token_ids.update(eos_ids)
+                    if not self.ignore_eos:
+                        eos_ids.update(self.stop_token_ids)
+                        self.stop_token_ids = list(eos_ids)
 
     @cached_property
     def sampling_type(self) -> SamplingType:
