@@ -709,11 +709,11 @@ class LLM:
                         if isinstance(output, RequestOutput):
                             # Calculate tokens only for RequestOutput
                             total_in_toks += len(output.prompt_token_ids)
-                            print("total_in_toks: ", total_in_toks)
+                            # print("total_in_toks: ", total_in_toks)
                             in_spd = total_in_toks / pbar.format_dict["elapsed"]
                             total_out_toks += sum(
                                 len(stp.token_ids) for stp in output.outputs)
-                            print("total_out_toks: ", total_out_toks)
+                            # print("total_out_toks: ", total_out_toks)
                             out_spd = (total_out_toks /
                                        pbar.format_dict["elapsed"])
                             pbar.postfix = (

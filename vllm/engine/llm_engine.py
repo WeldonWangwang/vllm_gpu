@@ -660,7 +660,6 @@ class LLMEngine:
         block_size = self.cache_config.block_size
         seq_id = next(self.seq_counter)
         eos_token_id = self._get_eos_token_id(lora_request)
-        print("^^^^^^^ ", eos_token_id)
         seq = Sequence(seq_id, processed_inputs, block_size, eos_token_id,
                        lora_request, prompt_adapter_request)
 
