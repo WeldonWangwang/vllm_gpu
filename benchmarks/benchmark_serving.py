@@ -258,9 +258,11 @@ def calculate_metrics(
             # serving backends instead of looking at len(outputs[i].itl) since
             # multiple output tokens may be bundled together
             # Note : this may inflate the output token count slightly
-            output_len = len(
+            output_len1 = len(
                 tokenizer(outputs[i].generated_text,
                           add_special_tokens=False).input_ids)
+            output_len2 = len(outputs[i].itl)
+            output_len = max(output_len1, output_len2)
             actual_output_lens.append(output_len)
             total_input += input_requests[i][1]
             if output_len > 1:
