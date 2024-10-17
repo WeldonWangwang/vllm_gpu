@@ -96,7 +96,14 @@ class OpenVINOCacheEngine:
         ov_device: str,
     ) -> List[Tuple[ov.Tensor, ov.Tensor]]:
         """Allocates KV cache."""
-        ov_tp_size = 1 if envs.VLLM_OPENVINO_TP_CANDIDATE_DEVICE == None else envs.VLLM_OPENVINO_TP_CANDIDATE_DEVICE.count(",") + 1
+        ov_tp_size = 0
+        if envs.VLLM_OPENVINO_TP_CANDIDATE_DEVICE != None:
+            ov_devices = envs.VLLM_OPENVINO_TP_CANDIDATE_DEVICE.split(',')
+            for device in ov_devices:
+                if device != '':
+                    ov_tp_size += 1
+        else:
+            ov_tp_size = 1
         k_block_shape = v_block_shape = self.attn_backend.get_kv_cache_shape(
             num_blocks, self.block_size, int(self.num_kv_heads / ov_tp_size), self.head_size)[1:]
         kv_cache: List[Tuple[ov.Tensor, ov.Tensor]] = []
